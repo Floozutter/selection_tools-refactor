@@ -1,0 +1,65 @@
+"""
+jongmoo.choi@canoo.com
+2020-12-23
+
+filename: st_dir2txt.py
+
+* Extracts the image filenames from the SOTA detection results.
+* Maintains the processed video names.
+* Extracts N videos only at a time
+
+Useage:
+   python scale_dir2txt.py >> list.txt
+"""
+import st_utils as st
+
+INPUT = '/mnt/nfs_pve/DL_data/canoo-label-pl-bravecam2k/d4t/*'
+PROCESSED = 'data_sampling_processed_videos.txt'
+#PROCESSED = 'aws_processed_videos.txt'
+max_videos = 1
+
+def update_processed_videofile(filename, videopath):
+    """Updates processed videofile
+
+    Args:
+        filename (str): processed videofile
+        videopath (str): input video filepath
+
+    Returns:
+        none
+    """
+    with open(filename, 'a') as file_id:
+        file_id.write('%s\n' % videopath)
+
+def run():
+    """Provides image filenames given (1) SOTA directory and (2) processed data.
+
+    Args:
+        INPUT: SOTA detection results (see st_readme.txt)
+        PROCESSED: txt file containing processed video filenames
+
+    Returns:
+        print out the image filenames (full path)
+        Ture
+    """
+    dirs = st.get_directories(INPUT)
+    imgs = []
+
+    processed = st.get_processed_videonames(PROCESSED)
+
+    cnt_video = 0
+    for videopath in dirs:
+        if cnt_video >= max_videos:
+            break
+        # we compare absolute path (consier using videoName only)
+        if not videopath in processed:
+            imgs += st.get_img_filenames(videopath)
+
+            update_processed_videofile(PROCESSED, videopath)
+            cnt_video += 1
+
+    for img in imgs:
+        print(img)
+    return True
+
+run()
